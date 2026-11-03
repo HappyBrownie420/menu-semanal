@@ -1,0 +1,15 @@
+{
+  "name": "Menú Semanal",
+  "short_name": "Menú",
+  "description": "Planificador de menús semanales y lista de compras según tu nevera",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f5ef",
+  "theme_color": "#2f7a5b",
+  "lang": "es",
+  "icons": [
+    { "src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

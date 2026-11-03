@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2f7a5b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Menú">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" href="icon.png">
+<style>
+  :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  body { margin: 0; font-size: 14px; }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+</style>
+<title>Menú Semanal</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Nunito+Sans:wght@400;600;700&display=swap">
+<script src="vendor/tailwind.js"></script>
+<script src="vendor/lucide.min.js"></script>
+<style>
+  /* Layout: una barra superior con pestañas, contenido en una columna de 1100px, navegación inferior en móvil. */
+  :root {
+    --bg: #f7f5ef;
+    --surface: #ffffff;
+    --surface-2: #efece3;
+    --fg: #22231f;
+    --muted: #6f6c62;
+    --line: #dedacd;
+    --accent: #2f7a5b;
+    --accent-fg: #ffffff;
+    --accent-soft: #dcefe4;
+    --warn: #b7632a;
+    --warn-soft: #f6e3d4;
+    --font-display: "Fraunces", Georgia, serif;
+    --font-body: "Nunito Sans", system-ui, -apple-system, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17191a; --surface: #202324; --surface-2: #2a2e2f; --fg: #ebe8df; --muted: #a39f93;
+      --line: #383d3e; --accent: #5cb98f; --accent-fg: #0f1a15; --accent-soft: #223d31;
+      --warn: #e0905a; --warn-soft: #3d2b1f; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17191a; --surface: #202324; --surface-2: #2a2e2f; --fg: #ebe8df; --muted: #a39f93;
+    --line: #383d3e; --accent: #5cb98f; --accent-fg: #0f1a15; --accent-soft: #223d31;
+    --warn: #e0905a; --warn-soft: #3d2b1f; color-scheme: dark;
+  }
+  html, body { height: 100%; }
+  body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+  .gutter { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .display { font-family: var(--font-display); text-wrap: balance; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+  .btn { display: inline-flex; align-items: center; gap: .4rem; border-radius: 10px; padding: .5rem .9rem; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; transition: background .15s; white-space: nowrap; }
+  .btn:hover { background: var(--surface-2); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn:focus-visible, .input:focus-visible, .chip:focus-visible, .slot:focus-visible, .tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn-primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+  .btn-primary:hover { filter: brightness(1.07); background: var(--accent); }
+  .btn-danger { color: var(--warn); }
+  .btn-icon { padding: .4rem; border-radius: 8px; }
+  .input { width: 100%; border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 10px; padding: .55rem .8rem; font: inherit; }
+  .chip { border: 1px solid var(--line); border-radius: 999px; padding: .3rem .8rem; font-size: .85rem; font-weight: 600; background: var(--surface); color: var(--muted); cursor: pointer; }
+  .chip.active { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+  .tag { font-size: .72rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  .tab { padding: .6rem .3rem; border-bottom: 2px solid transparent; color: var(--muted); font-weight: 600; display: inline-flex; gap: .4rem; align-items: center; cursor: pointer; background: none; border-top: 0; border-left: 0; border-right: 0; }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .slot { background: var(--surface-2); border: 1px dashed var(--line); border-radius: 10px; padding: .55rem .7rem; min-height: 64px; cursor: pointer; text-align: left; width: 100%; color: var(--fg); font: inherit; }
+  .slot.filled { background: var(--surface); border-style: solid; }
+  .slot:hover { border-color: var(--accent); }
+  .cover { height: 6px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+  .cover > i { display: block; height: 100%; background: var(--accent); }
+  .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(84px + env(safe-area-inset-bottom, 0px)); background: var(--fg); color: var(--bg); padding: .6rem 1rem; border-radius: 10px; font-weight: 600; z-index: 50; transition: opacity .2s; }
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 40; display: flex; align-items: flex-end; justify-content: center; padding: max(16px, env(safe-area-inset-left, 0px)); }
+  @media (min-width: 640px) { .overlay { align-items: center; } }
+  .modal { background: var(--surface); border-radius: 16px; width: 100%; max-width: 560px; max-height: 85vh; display: flex; flex-direction: column; border: 1px solid var(--line); }
+  .bottom-nav { position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line); display: flex; padding-bottom: env(safe-area-inset-bottom, 0px); z-index: 30; }
+  .bottom-nav button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: .5rem 0; font-size: .7rem; font-weight: 600; color: var(--muted); background: none; border: 0; }
+  .bottom-nav button.active { color: var(--accent); }
+  .item-check { accent-color: var(--accent); width: 18px; height: 18px; }
+  .done { text-decoration: line-through; color: var(--muted); }
+  .num { font-variant-numeric: tabular-nums; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+</head>
+<body>
+<header class="gutter sticky z-20" style="top: env(safe-area-inset-top, 0px); background: var(--surface); border-bottom: 1px solid var(--line);">
+  <div class="max-w-[1100px] mx-auto flex items-center justify-between gap-4 py-3">
+    <div class="flex items-center gap-2">
+      <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl" style="background: var(--accent-soft); color: var(--accent);"><i data-lucide="chef-hat" class="w-5 h-5"></i></span>
+      <div>
+        <h1 class="display text-xl leading-tight">Menú Semanal</h1>
+        <p class="text-xs" style="color: var(--muted);">Planifica con lo que tienes en la nevera</p>
+      </div>
+    </div>
+    <nav class="hidden sm:flex gap-5" id="tabs-desktop"></nav>
+  </div>
+</header>
+
+<main class="gutter max-w-[1100px] mx-auto pb-28 sm:pb-12 pt-5" id="app"></main>
+
+<nav class="bottom-nav sm:hidden" id="tabs-mobile"></nav>
+
+<div id="modal-root"></div>
+<div id="toast" class="toast" style="opacity:0; pointer-events:none;"></div>
+
+<script>
+(() => {
+  // ───────── Datos base ─────────
+  const CATS = ['Proteínas', 'Verduras', 'Carbohidratos', 'Lácteos', 'Otros'];
+  const CAT_ICON = { 'Proteínas': 'drumstick', 'Verduras': 'carrot', 'Carbohidratos': 'wheat', 'Lácteos': 'milk', 'Otros': 'package' };
+  const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+  const MEALS = ['Almuerzo', 'Cena'];
+
+  const I = (n, c) => ({ n, c });
+  const P = n => I(n, 'Proteínas'), V = n => I(n, 'Verduras'), C = n => I(n, 'Carbohidratos'), L = n => I(n, 'Lácteos'), O = n => I(n, 'Otros');
+
+  const BASE_RECIPES = [
+    { id: 'b1', name: 'Pollo al horno con verduras', ing: [P('Pollo'), V('Patata'), V('Zanahoria'), V('Cebolla'), O('Aceite de oliva')] },
+    { id: 'b2', name: 'Pasta boloñesa', ing: [C('Pasta'), P('Carne picada'), V('Tomate'), V('Cebolla'), O('Ajo')] },
+    { id: 'b3', name: 'Ensalada de legumbres', ing: [C('Garbanzos'), V('Tomate'), V('Pepino'), V('Pimiento'), O('Aceite de oliva')] },
+    { id: 'b4', name: 'Salmón con arroz y brócoli', ing: [P('Salmón'), C('Arroz'), V('Brócoli'), O('Limón')] },
+    { id: 'b5', name: 'Tortilla de patatas', ing: [P('Huevos'), V('Patata'), V('Cebolla'), O('Aceite de oliva')] },
+    { id: 'b6', name: 'Lentejas estofadas', ing: [C('Lentejas'), V('Zanahoria'), V('Cebolla'), V('Pimiento'), O('Pimentón')] },
+    { id: 'b7', name: 'Wok de ternera y verduras', ing: [P('Ternera'), V('Pimiento'), V('Calabacín'), C('Arroz'), O('Salsa de soja')] },
+    { id: 'b8', name: 'Crema de calabaza', ing: [V('Calabaza'), V('Cebolla'), L('Nata'), O('Caldo')] },
+    { id: 'b9', name: 'Tacos de pollo', ing: [P('Pollo'), C('Tortillas'), V('Lechuga'), V('Tomate'), L('Queso')] },
+    { id: 'b10', name: 'Merluza en salsa verde', ing: [P('Merluza'), O('Ajo'), V('Guisantes'), V('Patata'), O('Perejil')] },
+    { id: 'b11', name: 'Risotto de champiñones', ing: [C('Arroz'), V('Champiñones'), L('Queso parmesano'), V('Cebolla'), O('Caldo')] },
+    { id: 'b12', name: 'Hamburguesa casera con ensalada', ing: [P('Carne picada'), C('Pan de hamburguesa'), V('Lechuga'), V('Tomate'), L('Queso')] },
+    { id: 'b13', name: 'Revuelto de espinacas y queso', ing: [P('Huevos'), V('Espinacas'), L('Queso'), O('Ajo')] },
+    { id: 'b14', name: 'Pisto con huevo', ing: [V('Calabacín'), V('Pimiento'), V('Tomate'), V('Cebolla'), P('Huevos')] },
+    { id: 'b15', name: 'Pechuga a la plancha con puré', ing: [P('Pollo'), V('Patata'), L('Leche'), L('Mantequilla')] },
+    { id: 'b16', name: 'Ensalada de atún y pasta', ing: [C('Pasta'), P('Atún'), V('Tomate'), V('Maíz'), O('Aceite de oliva')] },
+    { id: 'b17', name: 'Sopa de pollo con fideos', ing: [P('Pollo'), C('Fideos'), V('Zanahoria'), V('Puerro'), O('Caldo')] },
+    { id: 'b18', name: 'Yogur con avena y fruta', ing: [L('Yogur'), C('Avena'), V('Plátano'), O('Miel')] },
+  ];
+
+  const SAMPLE_FRIDGE = [P('Pollo'), P('Huevos'), V('Patata'), V('Cebolla'), V('Tomate'), C('Arroz'), C('Pasta'), L('Queso'), O('Aceite de oliva'), O('Ajo')];
+
+  // ───────── Estado y persistencia ─────────
+  const KEY = 'menu-semanal-v1';
+  const emptyPlan = () => Object.fromEntries(DAYS.map(d => [d, { Almuerzo: null, Cena: null }]));
+  let state = { fridge: [], recipes: [], plan: emptyPlan(), checked: {}, tab: 'nevera', fridgeFilter: 'Todas' };
+  const uid = () => Math.random().toString(36).slice(2, 9);
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) { const s = JSON.parse(raw); state = { ...state, ...s, plan: { ...emptyPlan(), ...(s.plan || {}) } }; return; }
+    } catch (e) {}
+    state.fridge = SAMPLE_FRIDGE.map(i => ({ id: uid(), name: i.n, cat: i.c }));
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify({ fridge: state.fridge, recipes: state.recipes, plan: state.plan, checked: state.checked })); } catch (e) {} }
+
+  const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+  const allRecipes = () => [...BASE_RECIPES, ...state.recipes];
+  const recipeById = id => allRecipes().find(r => r.id === id) || null;
+  const fridgeSet = () => new Set(state.fridge.map(i => norm(i.name)));
+  const coverage = r => { const f = fridgeSet(); const have = r.ing.filter(i => f.has(norm(i.n))).length; return { have, total: r.ing.length, pct: r.ing.length ? have / r.ing.length : 0 }; };
+
+  // ───────── Motor de menús ─────────
+  function generateMenu() {
+    const recipes = allRecipes();
+    const used = {};
+    const slots = [];
+    DAYS.forEach(d => MEALS.forEach(m => slots.push([d, m])));
+    for (const [d, m] of slots) {
+      const scored = recipes.map(r => ({ r, s: coverage(r).pct - (used[r.id] || 0) * 0.35 + Math.random() * 0.08 })).sort((a, b) => b.s - a.s);
+      const pick = scored[0].r;
+      used[pick.id] = (used[pick.id] || 0) + 1;
+      state.plan[d][m] = pick.id;
+    }
+    save(); render();
+    toast('Menú generado con tu nevera');
+  }
+
+  function shoppingList() {
+    const f = fridgeSet();
+    const map = {};
+    DAYS.forEach(d => MEALS.forEach(m => {
+      const r = recipeById(state.plan[d][m]); if (!r) return;
+      r.ing.forEach(i => { const k = norm(i.n); if (f.has(k)) return; if (!map[k]) map[k] = { name: i.n, cat: i.c, count: 0, recipes: new Set() }; map[k].count++; map[k].recipes.add(r.name); });
+    }));
+    return Object.values(map).sort((a, b) => CATS.indexOf(a.cat) - CATS.indexOf(b.cat) || a.name.localeCompare(b.name));
+  }
+
+  // ───────── UI helpers ─────────
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  let toastT;
+  function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.style.opacity = 1; clearTimeout(toastT); toastT = setTimeout(() => t.style.opacity = 0, 2200); }
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); toast('Copiado al portapapeles'); }
+    catch (e) {
+      const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); toast('Copiado al portapapeles'); } catch (_) { toast('Selecciona el texto y cópialo manualmente'); }
+      document.body.removeChild(ta);
+    }
+  }
+  const icons = () => window.lucide && lucide.createIcons();
+
+  const TABS = [
+    { id: 'nevera', label: 'Nevera', icon: 'refrigerator' },
+    { id: 'recetas', label: 'Recetas', icon: 'book-open' },
+    { id: 'plan', label: 'Planificador', icon: 'calendar-days' },
+    { id: 'compras', label: 'Compras', icon: 'shopping-cart' },
+    { id: 'ajustes', label: 'Ajustes', icon: 'settings' },
+  ];
+
+  function renderTabs() {
+    const d = document.getElementById('tabs-desktop'), m = document.getElementById('tabs-mobile');
+    d.innerHTML = TABS.map(t => `<button class="tab ${state.tab === t.id ? 'active' : ''}" data-tab="${t.id}"><i data-lucide="${t.icon}" class="w-4 h-4"></i>${t.label}</button>`).join('');
+    m.innerHTML = TABS.map(t => `<button class="${state.tab === t.id ? 'active' : ''}" data-tab="${t.id}"><i data-lucide="${t.icon}" class="w-5 h-5"></i>${t.label}</button>`).join('');
+    document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { state.tab = b.dataset.tab; render(); });
+  }
+
+  function render() {
+    renderTabs();
+    const app = document.getElementById('app');
+    app.innerHTML = ({ nevera: viewFridge, recetas: viewRecipes, plan: viewPlan, compras: viewShop, ajustes: viewSettings })[state.tab]();
+    bind();
+    icons();
+  }
+
+  // ───────── Vista: Nevera ─────────
+  function viewFridge() {
+    const filter = state.fridgeFilter;
+    const items = state.fridge.filter(i => filter === 'Todas' || i.cat === filter);
+    const groups = CATS.map(c => ({ c, items: items.filter(i => i.cat === c) })).filter(g => g.items.length);
+    return `
+      <section class="grid gap-5">
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <div><p class="tag">Panel</p><h2 class="display text-2xl">Mi nevera</h2></div>
+          <p class="text-sm num" style="color: var(--muted);">${state.fridge.length} ingredientes</p>
+        </div>
+        <form id="add-fridge" class="card p-4 grid gap-3">
+          <div class="grid gap-3 sm:grid-cols-[1fr_auto_auto]">
+            <input id="fridge-name" class="input" placeholder="Ej: Pollo, Tomate, Arroz…" required autocomplete="off">
+            <select id="fridge-cat" class="input sm:w-44">${CATS.map(c => `<option>${c}</option>`).join('')}</select>
+            <button class="btn btn-primary justify-center" type="submit"><i data-lucide="plus" class="w-4 h-4"></i>Añadir</button>
+          </div>
+        </form>
+        <div class="flex flex-wrap gap-2">
+          ${['Todas', ...CATS].map(c => `<button class="chip ${filter === c ? 'active' : ''}" data-filter="${c}">${c}</button>`).join('')}
+        </div>
+        ${groups.length ? groups.map(g => `
+          <div class="card p-4 grid gap-3">
+            <div class="flex items-center gap-2 tag"><i data-lucide="${CAT_ICON[g.c]}" class="w-4 h-4"></i>${g.c} <span class="num">· ${g.items.length}</span></div>
+            <ul class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              ${g.items.map(i => `
+                <li class="flex items-center gap-2 rounded-lg px-3 py-2" style="background: var(--surface-2);">
+                  <span class="flex-1 min-w-0 truncate font-semibold">${esc(i.name)}</span>
+                  <button class="btn btn-icon" data-edit="${i.id}" title="Editar"><i data-lucide="pencil" class="w-4 h-4"></i></button>
+                  <button class="btn btn-icon btn-danger" data-del="${i.id}" title="Eliminar"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                </li>`).join('')}
+            </ul>
+          </div>`).join('') : `<div class="card p-8 text-center" style="color: var(--muted);">Tu nevera está vacía. Añade ingredientes para generar menús.</div>`}
+      </section>`;
+  }
+
+  // ───────── Vista: Recetas ─────────
+  function viewRecipes() {
+    const f = fridgeSet();
+    const list = allRecipes().map(r => ({ r, cov: coverage(r), custom: !r.id.startsWith('b') })).sort((a, b) => b.cov.pct - a.cov.pct);
+    return `
+      <section class="grid gap-5">
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <div><p class="tag">Recetario</p><h2 class="display text-2xl">Recetas</h2></div>
+          <button class="btn btn-primary" id="open-recipe"><i data-lucide="plus" class="w-4 h-4"></i>Nueva receta</button>
+        </div>
+        <p class="text-sm" style="color: var(--muted);">Ordenadas por los ingredientes que ya tienes en la nevera.</p>
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          ${list.map(({ r, cov, custom }) => `
+            <article class="card p-4 grid gap-2 content-start">
+              <div class="flex items-start justify-between gap-2">
+                <h3 class="font-bold leading-snug">${esc(r.name)}</h3>
+                ${custom ? `<button class="btn btn-icon btn-danger shrink-0" data-del-recipe="${r.id}" title="Eliminar receta"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : `<span class="tag shrink-0 mt-1">Base</span>`}
+              </div>
+              <div class="flex flex-wrap gap-1">
+                ${r.ing.map(i => { const has = f.has(norm(i.n)); return `<span class="text-xs rounded-md px-2 py-0.5" style="background:${has ? 'var(--accent-soft)' : 'var(--surface-2)'}; color:${has ? 'var(--accent)' : 'var(--muted)'};">${esc(i.n)}</span>`; }).join('')}
+              </div>
+              <div class="flex items-center gap-2 mt-1 text-xs num" style="color: var(--muted);"><div class="cover flex-1"><i style="width:${Math.round(cov.pct * 100)}%"></i></div>${cov.have}/${cov.total}</div>
+            </article>`).join('')}
+        </div>
+      </section>`;
+  }
+
+  // ───────── Vista: Planificador ─────────
+  function viewPlan() {
+    const filled = DAYS.reduce((n, d) => n + MEALS.filter(m => state.plan[d][m]).length, 0);
+    return `
+      <section class="grid gap-5">
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <div><p class="tag">Semana</p><h2 class="display text-2xl">Planificador</h2></div>
+          <div class="flex flex-wrap gap-2">
+            <button class="btn" id="clear-plan"><i data-lucide="eraser" class="w-4 h-4"></i>Vaciar</button>
+            <button class="btn btn-primary" id="gen-menu"><i data-lucide="sparkles" class="w-4 h-4"></i>Generar Menú con mi Nevera</button>
+          </div>
+        </div>
+        <p class="text-sm num" style="color: var(--muted);">${filled} de 14 comidas planificadas. Toca una casilla para asignar o cambiar la receta.</p>
+        <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          ${DAYS.map(d => `
+            <div class="card p-3 grid gap-2 content-start">
+              <div class="font-bold display">${d}</div>
+              ${MEALS.map(m => { const r = recipeById(state.plan[d][m]); return `
+                <button class="slot ${r ? 'filled' : ''}" data-slot="${d}|${m}">
+                  <span class="tag block">${m}</span>
+                  <span class="block font-semibold leading-snug">${r ? esc(r.name) : '<span style="color: var(--muted); font-weight: 400;">Sin asignar</span>'}</span>
+                </button>`; }).join('')}
+            </div>`).join('')}
+        </div>
+      </section>`;
+  }
+
+  // ───────── Vista: Compras ─────────
+  function viewShop() {
+    const list = shoppingList();
+    const pending = list.filter(i => !state.checked[norm(i.name)]).length;
+    const groups = CATS.map(c => ({ c, items: list.filter(i => i.cat === c) })).filter(g => g.items.length);
+    return `
+      <section class="grid gap-5">
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <div><p class="tag">Falta en la nevera</p><h2 class="display text-2xl">Lista de compras</h2></div>
+          <button class="btn btn-primary" id="copy-list" ${list.length ? '' : 'disabled'}><i data-lucide="clipboard-copy" class="w-4 h-4"></i>Copiar Lista de Compras</button>
+        </div>
+        ${list.length ? `
+          <p class="text-sm num" style="color: var(--muted);">${pending} artículos pendientes de ${list.length}. <button class="underline" id="uncheck-all">Desmarcar todo</button></p>
+          ${groups.map(g => `
+            <div class="card p-4 grid gap-2">
+              <div class="flex items-center gap-2 tag"><i data-lucide="${CAT_ICON[g.c]}" class="w-4 h-4"></i>${g.c}</div>
+              ${g.items.map(i => { const k = norm(i.name), done = !!state.checked[k]; return `
+                <label class="flex items-center gap-3 py-1.5 cursor-pointer">
+                  <input type="checkbox" class="item-check" data-check="${esc(k)}" id="chk-${esc(k).replace(/\s+/g, '-')}" ${done ? 'checked' : ''}>
+                  <span class="flex-1 min-w-0 ${done ? 'done' : 'font-semibold'}">${esc(i.name)} ${i.count > 1 ? `<span class="text-xs num" style="color: var(--muted);">×${i.count}</span>` : ''}</span>
+                  <span class="text-xs truncate max-w-[45%]" style="color: var(--muted);">${esc([...i.recipes].join(', '))}</span>
+                </label>`; }).join('')}
+            </div>`).join('')}`
+        : `<div class="card p-8 text-center" style="color: var(--muted);">${Object.values(state.plan).some(d => d.Almuerzo || d.Cena) ? 'Tienes todo lo necesario en la nevera.' : 'Planifica tu semana para generar la lista.'}</div>`}
+      </section>`;
+  }
+
+  function shopText() {
+    const list = shoppingList();
+    let out = '🛒 Lista de compras\n';
+    CATS.forEach(c => { const its = list.filter(i => i.cat === c); if (!its.length) return; out += `\n${c}:\n` + its.map(i => `${state.checked[norm(i.name)] ? '☑' : '☐'} ${i.name}${i.count > 1 ? ` (x${i.count})` : ''}`).join('\n') + '\n'; });
+    return out.trim();
+  }
+
+  // ───────── Vista: Ajustes ─────────
+  function viewSettings() {
+    return `
+      <section class="grid gap-5 max-w-2xl">
+        <div><p class="tag">Datos</p><h2 class="display text-2xl">Ajustes</h2></div>
+        <div class="card p-4 grid gap-3">
+          <h3 class="font-bold">Exportar</h3>
+          <p class="text-sm" style="color: var(--muted);">Copia el JSON con tu nevera, recetas, menú y lista de compras para guardarlo o pasarlo a otro dispositivo.</p>
+          <textarea id="export-area" class="input font-mono text-xs" rows="6" readonly>${esc(JSON.stringify({ fridge: state.fridge, recipes: state.recipes, plan: state.plan, checked: state.checked }, null, 2))}</textarea>
+          <div><button class="btn btn-primary" id="copy-export"><i data-lucide="copy" class="w-4 h-4"></i>Copiar JSON</button></div>
+        </div>
+        <div class="card p-4 grid gap-3">
+          <h3 class="font-bold">Importar</h3>
+          <p class="text-sm" style="color: var(--muted);">Pega un JSON exportado o elige el archivo. Reemplaza todos los datos actuales.</p>
+          <textarea id="import-area" class="input font-mono text-xs" rows="5" placeholder='{"fridge": [...], ...}'></textarea>
+          <div class="flex flex-wrap gap-2 items-center">
+            <button class="btn btn-primary" id="do-import"><i data-lucide="upload" class="w-4 h-4"></i>Importar JSON</button>
+            <label class="btn cursor-pointer"><i data-lucide="file-json" class="w-4 h-4"></i>Elegir archivo<input type="file" id="import-file" accept="application/json,.json" class="hidden"></label>
+          </div>
+        </div>
+        <div class="card p-4 grid gap-3">
+          <h3 class="font-bold">Restablecer</h3>
+          <div class="flex flex-wrap gap-2">
+            <button class="btn" id="load-sample"><i data-lucide="refrigerator" class="w-4 h-4"></i>Cargar nevera de ejemplo</button>
+            <button class="btn btn-danger" id="reset-all"><i data-lucide="trash-2" class="w-4 h-4"></i>Borrar todos los datos</button>
+          </div>
+          <div id="reset-confirm" hidden class="rounded-lg p-3 text-sm flex flex-wrap items-center gap-2" style="background: var(--warn-soft); color: var(--warn);">
+            Se borrará todo. ¿Seguro?
+            <button class="btn btn-danger" id="reset-yes">Sí, borrar</button><button class="btn" id="reset-no">Cancelar</button>
+          </div>
+        </div>
+      </section>`;
+  }
+
+  // ───────── Modales ─────────
+  function closeModal() { document.getElementById('modal-root').innerHTML = ''; }
+  function modal(html) {
+    const root = document.getElementById('modal-root');
+    root.innerHTML = `<div class="overlay" id="overlay"><div class="modal" role="dialog">${html}</div></div>`;
+    root.querySelector('#overlay').addEventListener('click', e => { if (e.target.id === 'overlay') closeModal(); });
+    root.querySelectorAll('[data-close]').forEach(b => b.onclick = closeModal);
+    icons();
+  }
+
+  function openSlotModal(day, meal) {
+    const current = state.plan[day][meal];
+    const list = allRecipes().map(r => ({ r, cov: coverage(r) })).sort((a, b) => b.cov.pct - a.cov.pct);
+    modal(`
+      <div class="p-4 flex items-center justify-between gap-3" style="border-bottom: 1px solid var(--line);">
+        <div><p class="tag">${day} · ${meal}</p><h3 class="display text-lg">Elige una receta</h3></div>
+        <button class="btn btn-icon" data-close><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="p-3 overflow-y-auto grid gap-2">
+        ${current ? `<button class="btn btn-danger justify-center" id="slot-clear"><i data-lucide="eraser" class="w-4 h-4"></i>Quitar receta</button>` : ''}
+        ${list.map(({ r, cov }) => `
+          <button class="slot ${r.id === current ? 'filled' : ''} flex items-center gap-3" data-pick="${r.id}" style="min-height:0;">
+            <span class="flex-1 min-w-0"><span class="block font-semibold">${esc(r.name)}</span><span class="block text-xs truncate" style="color: var(--muted);">${esc(r.ing.map(i => i.n).join(', '))}</span></span>
+            <span class="text-xs num shrink-0" style="color:${cov.pct === 1 ? 'var(--accent)' : 'var(--muted)'};">${cov.have}/${cov.total}</span>
+          </button>`).join('')}
+      </div>`);
+    document.querySelectorAll('[data-pick]').forEach(b => b.onclick = () => { state.plan[day][meal] = b.dataset.pick; save(); closeModal(); render(); });
+    const c = document.getElementById('slot-clear'); if (c) c.onclick = () => { state.plan[day][meal] = null; save(); closeModal(); render(); };
+  }
+
+  function openRecipeModal() {
+    let ings = [];
+    const draw = () => {
+      document.getElementById('ing-list').innerHTML = ings.length ? ings.map((i, idx) => `<span class="chip active inline-flex items-center gap-1">${esc(i.n)} <em class="not-italic opacity-70 text-xs">${i.c}</em><button type="button" data-rm="${idx}" class="ml-1" aria-label="Quitar">✕</button></span>`).join('') : `<span class="text-sm" style="color: var(--muted);">Aún no hay ingredientes.</span>`;
+      document.querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { ings.splice(+b.dataset.rm, 1); draw(); });
+    };
+    modal(`
+      <div class="p-4 flex items-center justify-between gap-3" style="border-bottom: 1px solid var(--line);">
+        <h3 class="display text-lg">Nueva receta</h3>
+        <button class="btn btn-icon" data-close><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form id="recipe-form" class="p-4 grid gap-4 overflow-y-auto">
+        <label class="grid gap-1"><span class="tag">Nombre</span><input id="rec-name" class="input" required placeholder="Ej: Curry de garbanzos"></label>
+        <div class="grid gap-2">
+          <span class="tag">Ingredientes obligatorios</span>
+          <div class="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
+            <input id="rec-ing" class="input" placeholder="Ingrediente" autocomplete="off">
+            <select id="rec-cat" class="input sm:w-40">${CATS.map(c => `<option>${c}</option>`).join('')}</select>
+            <button type="button" class="btn justify-center" id="rec-add"><i data-lucide="plus" class="w-4 h-4"></i>Añadir</button>
+          </div>
+          <div id="ing-list" class="flex flex-wrap gap-2"></div>
+        </div>
+        <p id="rec-err" class="text-sm" style="color: var(--warn);" hidden></p>
+        <div class="flex justify-end gap-2"><button type="button" class="btn" data-close>Cancelar</button><button class="btn btn-primary" type="submit"><i data-lucide="check" class="w-4 h-4"></i>Guardar receta</button></div>
+      </form>`);
+    draw();
+    const addIng = () => { const inp = document.getElementById('rec-ing'); const n = inp.value.trim(); if (!n) return; if (!ings.some(i => norm(i.n) === norm(n))) ings.push(I(n, document.getElementById('rec-cat').value)); inp.value = ''; inp.focus(); draw(); };
+    document.getElementById('rec-add').onclick = addIng;
+    document.getElementById('rec-ing').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addIng(); } });
+    document.getElementById('recipe-form').onsubmit = e => {
+      e.preventDefault();
+      const err = document.getElementById('rec-err');
+      if (!ings.length) { err.textContent = 'Añade al menos un ingrediente.'; err.hidden = false; return; }
+      state.recipes.push({ id: 'c' + uid(), name: document.getElementById('rec-name').value.trim(), ing: ings });
+      save(); closeModal(); render(); toast('Receta guardada');
+    };
+  }
+
+  function openEditItem(id) {
+    const it = state.fridge.find(i => i.id === id); if (!it) return;
+    modal(`
+      <div class="p-4 flex items-center justify-between gap-3" style="border-bottom: 1px solid var(--line);">
+        <h3 class="display text-lg">Editar ingrediente</h3>
+        <button class="btn btn-icon" data-close><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form id="edit-form" class="p-4 grid gap-3">
+        <input id="edit-name" class="input" value="${esc(it.name)}" required>
+        <div class="flex flex-wrap gap-2">${CATS.map(c => `<button type="button" class="chip ${it.cat === c ? 'active' : ''}" data-cat="${c}">${c}</button>`).join('')}</div>
+        <div class="flex justify-end gap-2"><button type="button" class="btn" data-close>Cancelar</button><button class="btn btn-primary" type="submit">Guardar</button></div>
+      </form>`);
+    let cat = it.cat;
+    document.querySelectorAll('[data-cat]').forEach(b => b.onclick = () => { cat = b.dataset.cat; document.querySelectorAll('[data-cat]').forEach(x => x.classList.toggle('active', x.dataset.cat === cat)); });
+    document.getElementById('edit-form').onsubmit = e => { e.preventDefault(); it.name = document.getElementById('edit-name').value.trim(); it.cat = cat; save(); closeModal(); render(); };
+  }
+
+  // ───────── Eventos ─────────
+  const on = (id, ev, fn) => { const el = document.getElementById(id); if (el) el.addEventListener(ev, fn); };
+  function bind() {
+    on('add-fridge', 'submit', e => {
+      e.preventDefault();
+      const name = document.getElementById('fridge-name').value.trim(); if (!name) return;
+      if (state.fridge.some(i => norm(i.name) === norm(name))) { toast('Ese ingrediente ya está en la nevera'); return; }
+      state.fridge.push({ id: uid(), name, cat: document.getElementById('fridge-cat').value });
+      save(); render(); document.getElementById('fridge-name').focus();
+    });
+    document.querySelectorAll('[data-filter]').forEach(b => b.onclick = () => { state.fridgeFilter = b.dataset.filter; render(); });
+    document.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { state.fridge = state.fridge.filter(i => i.id !== b.dataset.del); save(); render(); });
+    document.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openEditItem(b.dataset.edit));
+    on('open-recipe', 'click', openRecipeModal);
+    document.querySelectorAll('[data-del-recipe]').forEach(b => b.onclick = () => {
+      state.recipes = state.recipes.filter(r => r.id !== b.dataset.delRecipe);
+      DAYS.forEach(d => MEALS.forEach(m => { if (state.plan[d][m] === b.dataset.delRecipe) state.plan[d][m] = null; }));
+      save(); render();
+    });
+    on('gen-menu', 'click', generateMenu);
+    on('clear-plan', 'click', () => { state.plan = emptyPlan(); save(); render(); });
+    document.querySelectorAll('[data-slot]').forEach(b => b.onclick = () => { const [d, m] = b.dataset.slot.split('|'); openSlotModal(d, m); });
+    document.querySelectorAll('[data-check]').forEach(c => c.onchange = () => { state.checked[c.dataset.check] = c.checked; save(); render(); });
+    on('uncheck-all', 'click', () => { state.checked = {}; save(); render(); });
+    on('copy-list', 'click', () => copyText(shopText()));
+    on('copy-export', 'click', () => copyText(document.getElementById('export-area').value));
+    on('do-import', 'click', () => importJSON(document.getElementById('import-area').value));
+    on('import-file', 'change', e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => importJSON(r.result); r.readAsText(f); });
+    on('load-sample', 'click', () => { SAMPLE_FRIDGE.forEach(i => { if (!state.fridge.some(x => norm(x.name) === norm(i.n))) state.fridge.push({ id: uid(), name: i.n, cat: i.c }); }); save(); render(); toast('Nevera de ejemplo cargada'); });
+    on('reset-all', 'click', () => { document.getElementById('reset-confirm').hidden = false; });
+    on('reset-no', 'click', () => { document.getElementById('reset-confirm').hidden = true; });
+    on('reset-yes', 'click', () => { state.fridge = []; state.recipes = []; state.plan = emptyPlan(); state.checked = {}; save(); render(); toast('Datos borrados'); });
+  }
+
+  function importJSON(text) {
+    try {
+      const d = JSON.parse(text);
+      if (!d || typeof d !== 'object') throw 0;
+      state.fridge = Array.isArray(d.fridge) ? d.fridge.filter(i => i && i.name).map(i => ({ id: i.id || uid(), name: String(i.name), cat: CATS.includes(i.cat) ? i.cat : 'Otros' })) : [];
+      state.recipes = Array.isArray(d.recipes) ? d.recipes.filter(r => r && r.name && Array.isArray(r.ing)).map(r => ({ id: r.id && !String(r.id).startsWith('b') ? String(r.id) : 'c' + uid(), name: String(r.name), ing: r.ing.map(i => I(String(i.n), CATS.includes(i.c) ? i.c : 'Otros')) })) : [];
+      state.plan = { ...emptyPlan(), ...(d.plan || {}) };
+      state.checked = d.checked && typeof d.checked === 'object' ? d.checked : {};
+      save(); render(); toast('Datos importados');
+    } catch (e) { toast('El JSON no es válido'); }
+  }
+
+  load();
+  render();
+})();
+</script>
+
+<script>
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+</script>
+</body>
+</html>
